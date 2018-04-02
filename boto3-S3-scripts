@@ -1,0 +1,129 @@
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call S3 to list current buckets
+response = s3.list_buckets()
+# Get a list of all bucket names from the response
+buckets = [bucket['Name'] for bucket in response['Buckets']]
+# Print out the bucket list
+print("Bucket List: %s" % buckets)
+
+import boto3
+s3 = boto3.client('s3')
+s3.create_bucket(Bucket='nanbao-bucket')
+
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+filename = 'test.png'
+bucket_name = 'nanbao-bucket'
+# Uploads the given file using a managed uploader, which will split up large
+# files automatically and upload parts in parallel.
+s3.upload_file(filename, bucket_name, filename)
+
+
+import boto3
+import botocore
+BUCKET_NAME = 'nanbao-bucket' # replace with your bucket name
+KEY = 'test.png' # replace with your object key
+s3 = boto3.resource('s3')
+try:
+    s3.Bucket(BUCKET_NAME).download_file(KEY, 'test.png')
+except botocore.exceptions.ClientError as e:
+    if e.response['Error']['Code'] == "404":
+        print("The object does not exist.")
+    else:
+        raise
+		
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call S3 to get CORS configuration for selected bucket
+result = s3.get_bucket_cors(Bucket='nanbao-bucket')
+
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Create the CORS configuration
+cors_configuration = {
+    'CORSRules': [{
+        'AllowedHeaders': ['Authorization'],
+        'AllowedMethods': ['GET', 'PUT'],
+        'AllowedOrigins': ['*'],
+        'ExposeHeaders': ['GET', 'PUT'],
+        'MaxAgeSeconds': 3000
+    }]
+}
+# Set the new CORS configuration on the selected bucket
+s3.put_bucket_cors(Bucket='nanbao-bucket', CORSConfiguration=cors_configuration)
+
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call to S3 to retrieve the policy for the given bucket
+result = s3.get_bucket_acl(Bucket='nanbao-bucket')
+print(result)
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call to S3 to retrieve the policy for the given bucket
+result = s3.get_bucket_policy(Bucket='nanbao-bucket')
+print(result)
+
+import boto3
+import json
+# Create an S3 client
+s3 = boto3.client('s3')
+bucket_name = 'nanbao-bucket'
+# Create the bucket policy
+bucket_policy = {
+    'Version': '2012-10-17',
+    'Statement': [{
+        'Sid': 'AddPerm',
+        'Effect': 'Allow',
+        'Principal': '*',
+        'Action': ['s3:GetObject'],
+        'Resource': "arn:aws:s3:::%s/*" % bucket_name
+    }]
+}
+# Convert the policy to a JSON string
+bucket_policy = json.dumps(bucket_policy)
+# Set the new policy on the given bucket
+s3.put_bucket_policy(Bucket=bucket_name, Policy=bucket_policy)
+
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call S3 to delete the policy for the given bucket
+s3.delete_bucket_policy(Bucket='nanbao-bucket')
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call to S3 to retrieve the policy for the given bucket
+result = s3.get_bucket_website(Bucket='nanbao-bucket')
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Create the configuration for the website
+website_configuration = {
+    'ErrorDocument': {'Key': 'error.html'},
+    'IndexDocument': {'Suffix': 'index.html'},
+}
+# Set the new policy on the selected bucket
+s3.put_bucket_website(
+    Bucket='nanbao-bucket',
+    WebsiteConfiguration=website_configuration
+)
+
+import boto3
+# Create an S3 client
+s3 = boto3.client('s3')
+# Call S3 to delete the website policy for the given bucket
+s3.delete_bucket_website(Bucket='nanbao-bucket')
