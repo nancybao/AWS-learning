@@ -1,0 +1,174 @@
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+# Create a SQS queue
+response = sqs.create_queue(
+    QueueName='SQS_QUEUE_NAME',
+    Attributes={
+        'DelaySeconds': '60',
+        'MessageRetentionPeriod': '86400'
+    }
+)
+print(response['QueueUrl'])
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+# List SQS queues
+response = sqs.list_queues()
+print(response['QueueUrls'])
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+# Get URL for SQS queue
+response = sqs.get_queue_url(QueueName='SQS_QUEUE_NAME')
+print(response['QueueUrl'])
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+# Delete SQS queue
+sqs.delete_queue(QueueUrl='https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME')
+
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url = 'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME'
+# Send message to SQS queue
+response = sqs.send_message(
+    QueueUrl=queue_url,
+    DelaySeconds=10,
+    MessageAttributes={
+        'Title': {
+            'DataType': 'String',
+            'StringValue': 'The Whistler'
+        },
+        'Author': {
+            'DataType': 'String',
+            'StringValue': 'John Grisham'
+        },
+        'WeeksOn': {
+            'DataType': 'Number',
+            'StringValue': '6'
+        }
+    },
+    MessageBody=(
+        'Information about current NY Times fiction bestseller for '
+        'week of 12/11/2016.'
+    )
+)
+print(response['MessageId'])
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url = 'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME'
+# Receive message from SQS queue
+response = sqs.receive_message(
+    QueueUrl=queue_url,
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=1,
+    MessageAttributeNames=[
+        'All'
+    ],
+    VisibilityTimeout=0,
+    WaitTimeSeconds=0
+)
+message = response['Messages'][0]
+receipt_handle = message['ReceiptHandle']
+# Delete received message from queue
+sqs.delete_message(
+    QueueUrl=queue_url,
+    ReceiptHandle=receipt_handle
+)
+print('Received and deleted message: %s' % message)
+
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url = 'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME'
+# Receive message from SQS queue
+response = sqs.receive_message(
+    QueueUrl=queue_url,
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=1,
+    MessageAttributeNames=[
+        'All'
+    ],
+)
+message = response['Messages'][0]
+receipt_handle = message['ReceiptHandle']
+
+# Change visibility timeout of message from queue
+sqs.change_message_visibility(
+    QueueUrl=queue_url,
+    ReceiptHandle=receipt_handle,
+    VisibilityTimeout=36000
+)
+print('Received and changed visibility timeout of message: %s' % message)
+
+
+import boto3
+
+# Create SQS client
+sqs = boto3.client('sqs')
+# Create a SQS queue with long polling enabled
+response = sqs.create_queue(
+    QueueName='SQS_QUEUE_NAME1',
+    Attributes={'ReceiveMessageWaitTimeSeconds': '20'}
+)
+print(response['QueueUrl'])
+
+import boto3
+
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url = 'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME1'
+# Enable long polling on an existing SQS queue
+sqs.set_queue_attributes(
+    QueueUrl=queue_url,
+    Attributes={'ReceiveMessageWaitTimeSeconds': '20'}
+)
+
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url =  'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME1'
+# Long poll for message on provided SQS queue
+response = sqs.receive_message(
+    QueueUrl=queue_url,
+    AttributeNames=[
+        'SentTimestamp'
+    ],
+    MaxNumberOfMessages=1,
+    MessageAttributeNames=[
+        'All'
+    ],
+    WaitTimeSeconds=20
+)
+print(response)
+
+import json
+import boto3
+# Create SQS client
+sqs = boto3.client('sqs')
+queue_url = 'https://queue.amazonaws.com/527263885920/SQS_QUEUE_NAME1'
+dead_letter_queue_arn = 'DEAD_LETTER_QUEUE_ARN'
+redrive_policy = {
+    'deadLetterTargetArn': dead_letter_queue_arn,
+    'maxReceiveCount': '10'
+}
+# Configure queue to send messages to dead letter queue
+sqs.set_queue_attributes(
+    QueueUrl=queue_url,
+    Attributes={
+        'RedrivePolicy': json.dumps(redrive_policy)
+    }
+)
